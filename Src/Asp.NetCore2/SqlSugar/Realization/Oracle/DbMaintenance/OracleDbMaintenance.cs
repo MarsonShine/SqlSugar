@@ -58,7 +58,7 @@ namespace SqlSugar
         {
             get
             {
-                return "select count(1) from user_ind_columns where upper(index_name)=upper('{0}')";
+                return "SELECT NVL2((SELECT INDEX_NAME FROM ALL_INDEXES WHERE INDEX_NAME=UPPER('{0}') AND OWNER = USER ),1,0)+NVL2((SELECT CONSTRAINT_NAME FROM ALL_CONSTRAINTS WHERE CONSTRAINT_NAME=UPPER('{0}') AND OWNER = USER),2,0) AS ROWCOUNT FROM DUAL";
             }
         }
         protected override string CreateIndexSql
@@ -271,7 +271,7 @@ namespace SqlSugar
         }
         #endregion
 
-        #region Methods
+        #region Methods 
         public override bool IsAnyTable(string tableName, bool isCache = true)
         {
             if (isCache)
@@ -344,7 +344,7 @@ WHERE table_name = '"+tableName+"'");
         public override List<string> GetIndexList(string tableName)
         {
             var sql = $"SELECT index_name FROM user_ind_columns\r\nWHERE upper(table_name) = upper('{tableName}')";
-            return this.Context.Ado.SqlQuery<string>(sql);
+            return this.Context.Ado.SqlQuery<string>(sql).Distinct().ToList();
         }
         public override List<string> GetProcList(string dbName)
         {
@@ -645,6 +645,21 @@ WHERE table_name = '"+tableName+"'");
                 }
             }
             return true;
+        }
+        public override bool IsAnyIndex(string indexName)
+        {
+            string sql = string.Format(this.IsAnyIndexSql, indexName);
+            return this.Context.Ado.GetInt(sql) == 1;
+        }
+        public override bool IsAnyConstraint(string constraintName)
+        {
+            string sql = string.Format(this.IsAnyIndexSql, constraintName);
+            int res = this.Context.Ado.GetInt(sql);
+            return res == 2 || res == 3;
+        }
+        public override bool DropIndex(string indexName, string tableName)
+        {
+            return DropIndex(indexName);
         }
         #endregion
 

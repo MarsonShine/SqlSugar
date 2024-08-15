@@ -13,6 +13,21 @@ namespace SqlSugar
         internal MethodInfo MethodInfo { get; set; }
         internal object objectValue { get; set; }
 
+        public int ExecuteCommandWithOptLock(bool isThrowError = false) 
+        {
+            if (Context == null) return 0;
+            var inertable = MethodInfo.Invoke(Context, new object[] { objectValue });
+            var result = inertable.GetType().GetMyMethod("ExecuteCommandWithOptLock",1,typeof(bool)).Invoke(inertable, new object[] { isThrowError });
+            return (int)result;
+        }
+
+        public async Task<int> ExecuteCommandWithOptLockAsync(bool isThrowError = false)
+        {
+            if (Context == null) return 0;
+            var inertable = MethodInfo.Invoke(Context, new object[] { objectValue });
+            var result = inertable.GetType().GetMyMethod("ExecuteCommandWithOptLockAsync", 1, typeof(bool)).Invoke(inertable, new object[] { isThrowError });
+            return await(Task<int>)result;
+        }
         public int ExecuteCommand()
         {
             if (Context == null) return 0;
@@ -30,6 +45,10 @@ namespace SqlSugar
         }
         public UpdateCommonMethodInfo IgnoreColumns(params string[] ignoreColumns)
         {
+            if (Context == null) 
+            {
+                return new UpdateCommonMethodInfo();
+            }
             var inertable = MethodInfo.Invoke(Context, new object[] { objectValue });
             var newMethod = inertable.GetType().GetMyMethod("IgnoreColumns", 1,typeof(string[]));
             var result = newMethod.Invoke(inertable, new object[] { ignoreColumns });

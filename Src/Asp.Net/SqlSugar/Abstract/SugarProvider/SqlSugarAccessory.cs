@@ -523,10 +523,20 @@ namespace SqlSugar
                     if (this.CurrentConnectionConfig.MoreSettings == null)
                         this.CurrentConnectionConfig.MoreSettings = new ConnMoreSettings();
                     this.CurrentConnectionConfig.MoreSettings.DatabaseModel = DbType.Doris;
+                    this.CurrentConnectionConfig.MoreSettings.DisableNvarchar = true;
                     break;
                 case DbType.TDengine:
                     Check.Exception(SugarCompatible.IsFramework, "TDengine only support .net core");
                     InstanceFactory.CustomDllName = SugarCompatible.IsFramework ? "SqlSugar.TDengine" : "SqlSugar.TDengineCore";
+                    break;
+                case DbType.Xugu:
+                    Check.Exception(SugarCompatible.IsFramework, "Xugu only support .net core");
+                    //InstanceFactory.CustomDbName = "Xugu"; 
+                    InstanceFactory.CustomDllName = "SqlSugar.XuguCore"; 
+                    //InstanceFactory.CustomNamespace = "SqlSugar.Xugu"; 
+                    break;
+                case DbType.GoldenDB:
+                    config.DbType = DbType.MySql;
                     break;
                 default:
                     throw new Exception("ConnectionConfig.DbType is null");
